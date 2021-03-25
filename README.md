@@ -1,1 +1,3 @@
-## DeepMood
+# DeepMood
+
+![architecture](images/architecture.png)
