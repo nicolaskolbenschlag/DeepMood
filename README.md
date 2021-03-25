@@ -1,3 +1,3 @@
 # DeepMood
 
-![architecture](images/architecture.png)
+![architecture](https://github.com/nicolaskolbenchlag/DeepMood/blob/main/images/Architecture.png)
