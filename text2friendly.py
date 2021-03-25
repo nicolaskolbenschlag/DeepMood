@@ -40,33 +40,30 @@ import sklearn.metrics.pairwise
 
 google.colab.drive.mount("/content/drive")
 
-# df_ = pd.read_csv("drive/MyDrive/Business/Künstliche Intelligenz Projekte/DeepMood/Twitter-US-Airline-Sentiment/Tweets.csv")
-# df_ = df_[["text", "airline_sentiment", "airline_sentiment_confidence"]]
+df_ = pd.read_csv("drive/MyDrive/Business/Künstliche Intelligenz Projekte/DeepMood/Twitter-US-Airline-Sentiment/Tweets.csv")
+df_ = df_[["text", "airline_sentiment", "airline_sentiment_confidence"]]
 
-# df = df_[2000:4000]
+df = df_[4000:5000]
 
-# y = df.airline_sentiment
-# labels = np.zeros(len(y))
-# labels[y == "neutral"] = .5
-# labels[y == "negative"] = 1.
-# y = labels
-# print("labels for sentiment:", y.shape)
-
-# df
-
-df_ = pd.read_csv("drive/MyDrive/Business/Künstliche Intelligenz Projekte/DeepMood/Sentiment140/training.1600000.processed.noemoticon.csv", header=None, names=["target", "ids", "date", "flag", "user", "text"], encoding="latin-1")
-df_ = df_[["text", "target"]]
-
-df = df_[:1000]
-
-y = df.target
+y = df.airline_sentiment
 labels = np.zeros(len(y))
-labels[y == 0] = 1.
-
+labels[y == "neutral"] = .5
+labels[y == "negative"] = 1.
 y = labels
 print("labels for sentiment:", y.shape)
-
 df
+
+# df_ = pd.read_csv("drive/MyDrive/Business/Künstliche Intelligenz Projekte/DeepMood/Sentiment140/training.1600000.processed.noemoticon.csv", header=None, names=["target", "ids", "date", "flag", "user", "text"], encoding="latin-1")
+# df_ = df_[["text", "target"]]
+
+# df = df_[:1000]
+
+# y = df.target
+# labels = np.zeros(len(y))
+# labels[y == 0] = 1.
+# y = labels
+# print("labels for sentiment:", y.shape)
+# df
 
 """# Model"""
 
@@ -96,7 +93,6 @@ x = tf.keras.layers.Dense(vocab_size, activation="sigmoid") (x)
 decoder = tf.keras.Model(input_decoder, x, name="decoder")
 decoder.summary()
 
-
 input_autoencoder = tf.keras.layers.Input(shape=(SEQ_LEN,), dtype=tf.int32)
 embedding = encoder(input_autoencoder).last_hidden_state[:]
 x = embedding
@@ -115,11 +111,11 @@ decoder_labelizer = sklearn.preprocessing.LabelBinarizer().fit(list(tokenizer.vo
 target = decoder_labelizer.transform(input_ids.flatten()).reshape((input_ids.shape[0], SEQ_LEN, vocab_size))
 print("target:", target.shape)
 
-train_dataset_autoencoder = tf.data.Dataset.from_tensor_slices((input_ids, target)).shuffle(100).batch(32)
-
 autoencoder.compile(optimizer="Adam", loss="categorical_crossentropy")
-# autoencoder.fit(input_ids, target, epochs=10, batch_size=32)
-autoencoder.fit(train_dataset_autoencoder, epochs=15)
+autoencoder.fit(input_ids, target, epochs=10, batch_size=32)
+
+# train_dataset_autoencoder = tf.data.Dataset.from_tensor_slices((input_ids, target)).shuffle(100).batch(32)
+# autoencoder.fit(train_dataset_autoencoder, epochs=15)
 
 index = 1
 print("real:", tokenizer.decode(input_ids[index]))
@@ -172,6 +168,7 @@ TEXT = "This looks beatiful"
 # NOTE create embeddings
 input_ids_test = tokenizer.encode(TEXT, return_tensors="tf", truncation=True, max_length=SEQ_LEN, padding="max_length")
 embedding_test = encoder(input_ids_test).last_hidden_state
+print("embedding_test.shape:", embedding_test.shape)
 
 # NOTE sentiment before
 label_before = sentiment_clf.predict([embedding_test[:,0]])[0][0]
@@ -185,13 +182,16 @@ for layer in decoder.layers:
 
 def loss_sentiment_content(embedding, content):
 
-  def euclidean_distance_loss(p, q):
+  def euclidean_distance(p, q):
     return tf.keras.backend.sqrt(tf.keras.backend.sum(tf.keras.backend.square(q - p), axis=-1))
 
   def loss_content(embedding, content):
     # NOTE cosine similarity ranges from -1 (not similar) to 1 (similar) and we want the two embeddings to be similar, so we reverse its sign (1 - sim)
-    sim = tf.keras.losses.cosine_similarity(embedding, content) + 1
-    loss = 1 - (sim / 2)
+    # sim = tf.keras.losses.cosine_similarity(embedding, content) + 1
+    # loss = 1 - (sim / 2)
+
+    loss = euclidean_distance(embedding, content)
+
     return loss
 
   def loss_sentiment(embedding):
@@ -200,8 +200,8 @@ def loss_sentiment_content(embedding, content):
     loss = pred
     return loss
   
-  weight_sentiment = .0001
-  weight_content = .2
+  weight_sentiment = .1
+  weight_content = .1
   
   loss = weight_content * loss_content(embedding, content) + weight_sentiment * loss_sentiment(embedding)
   return loss
@@ -209,7 +209,7 @@ def loss_sentiment_content(embedding, content):
 opt = tf.keras.optimizers.Adam()
 # opt = tf.keras.optimizers.Adam(learning_rate=.01, beta_1=.99, epsilon=1e-1)
 
-embedding_ = embedding[0]
+embedding_ = embedding_test[0]
 
 @tf.function()
 def train_step(var):
@@ -223,10 +223,10 @@ def train_step(var):
 
 var = tf.Variable(embedding_)
 
-for i in range(1000):
+for i in range(100):
 
   # if True:
-  if i % 100 == 0:
+  if i % 10 == 0:
 
     updated = var.numpy()
 
