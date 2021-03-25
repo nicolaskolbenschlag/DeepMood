@@ -1,6 +1,6 @@
 # DeepMood
 
-Author: Nicolas Kolbenschlag
+Author: Nicolas Kolbenschlag (University of Augsburg)
 
 This project aims to transfer the ideas from [Neural style transfer](https://arxiv.org/abs/1508.06576) from images to Natural Language Processing.
 
