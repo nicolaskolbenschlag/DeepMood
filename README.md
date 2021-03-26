@@ -10,5 +10,8 @@ This project aims to transfer the ideas from [Neural style transfer](https://arx
 
 ```shell
 pip install -r requirements.txt
+```
+
+```shell
 python text2friendly.py
 ```
