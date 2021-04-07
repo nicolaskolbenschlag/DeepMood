@@ -22,9 +22,9 @@ import sklearn.metrics.pairwise
 # print("labels for sentiment:", y.shape)
 # df
 
-df_ = pd.read_csv("C:/Users/Nicolas Kolbenschlag/Downloads/training.1600000.processed.noemoticon.csv", header=None, names=["target", "ids", "date", "flag", "user", "text"], encoding="latin-1")
+print("Loading dataset...")
+df_ = pd.read_csv("data/training.1600000.processed.noemoticon.csv", header=None, names=["target", "ids", "date", "flag", "user", "text"], encoding="latin-1")
 df_ = df_[["text", "target"]]
-
 df = df_[:]
 
 y = df.target
@@ -32,24 +32,25 @@ labels = np.zeros(len(y))
 labels[y == 0] = 1.
 y = labels
 print("labels for sentiment:", y.shape)
-df
 
+print("Loading model...")
 # MODEL = "distilbert-base-uncased"
 MODEL = "bert-base-uncased"
-
 SEQ_LEN = 16
-
 tokenizer = transformers.AutoTokenizer.from_pretrained(MODEL)
 encoder = transformers.TFAutoModel.from_pretrained(MODEL, trainable=False)
 
 text = "This is a Test Text!"
+print("Text:", text)
 input_ids = tokenizer.encode(text, return_tensors="tf", truncation=True, max_length=SEQ_LEN, padding="max_length")
 input_ids
 decoded = tokenizer.decode(input_ids[0], skip_special_tokens=True)
-print("decoded:", decoded)
+print("Decoded:", decoded)
 
 vocab_size = tokenizer.vocab_size
-print("vocab_size:", vocab_size)
+print("Vocab_size:", vocab_size)
+
+print("=" * 20)
 
 input_decoder = tf.keras.layers.Input(shape=(SEQ_LEN, 768))
 x = tf.keras.layers.Bidirectional(tf.keras.layers.LSTM(512, activation="relu", return_sequences=True, dropout=.25)) (input_decoder)
@@ -64,18 +65,19 @@ embedding = encoder(input_autoencoder).last_hidden_state[:]
 x = embedding
 x = decoder(x)
 autoencoder = tf.keras.Model(input_autoencoder, x, name="autoencoder")
-print("Autoencoder")
+print("Autoencoder:")
 autoencoder.summary()
 
 texts = df.text
 input_ids = [tokenizer.encode(x, return_tensors="tf", truncation=True, max_length=SEQ_LEN, padding="max_length")[0] for x in texts]
 input_ids = np.array(input_ids)
-print(input_ids.shape)
+print("input_ids.shape =", input_ids.shape)
 
 decoder_labelizer = sklearn.preprocessing.LabelBinarizer().fit(list(tokenizer.vocab.values()))
 target = decoder_labelizer.transform(input_ids.flatten()).reshape((input_ids.shape[0], SEQ_LEN, vocab_size))
-print("target:", target.shape)
+print("target.shape =", target.shape)
 
+print("Fitting autoencoder...")
 autoencoder.compile(optimizer="Adam", loss="categorical_crossentropy")
 autoencoder.fit(input_ids, target, epochs=10, batch_size=32)
 
@@ -83,12 +85,14 @@ autoencoder.fit(input_ids, target, epochs=10, batch_size=32)
 # autoencoder.fit(train_dataset_autoencoder, epochs=15)
 
 index = 1
-print("real:", tokenizer.decode(input_ids[index]))
+print("Real:", tokenizer.decode(input_ids[index]))
 pred = autoencoder.predict(input_ids[index : index + 1])
-print("model output:", pred.shape)
+print("Model output:", pred.shape)
 pred = decoder_labelizer.inverse_transform(pred.squeeze(0))
 pred = tokenizer.decode(pred)
-print("pred:", pred)
+print("Pred:", pred)
+
+print("=" * 20)
 
 # # NOTE sentiment of text input
 # inputs = tf.keras.layers.Input(shape=(SEQ_LEN,), dtype=tf.int32)
@@ -110,29 +114,33 @@ x = tf.keras.layers.Dense(1, activation="sigmoid") (x)
 sentiment_clf = tf.keras.Model(embedding, x, name="sentiment_classifier")
 print("Sentiment model:")
 sentiment_clf.summary()
-
 sentiment_clf.compile(optimizer="Adam", loss="mse")
 
+print("Creating embeddings as features for sentiment estimator...")
 embeddings = encoder(input_ids).last_hidden_state[:,0]
-print("embeddings for sentiment:", embeddings.shape)
+print("Embeddings for sentiment:", embeddings.shape)
 
 X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(embeddings.numpy(), y, test_size=.05)
+print("Fitting sentiment model...")
 sentiment_clf.fit(X_train, y_train, epochs=20, batch_size=32)
 
 # TODO evaluate sentiment prediction
 # y_pred = sentiment_clf.predict(X_test)
 
-TEXT = "Your hair looks realy horrible"
-TEXT = "This looks beatiful"
+print("Changing the sentiment...")
+
+TEXT = "The weather looks realy horrible"# NOTE expect output like: 'the weather could be better'
+print("Original text:", TEXT)
 
 # NOTE create embeddings
+print("Creating feature embedding...")
 input_ids_test = tokenizer.encode(TEXT, return_tensors="tf", truncation=True, max_length=SEQ_LEN, padding="max_length")
 embedding_test = encoder(input_ids_test).last_hidden_state
 print("embedding_test.shape:", embedding_test.shape)
 
 # NOTE sentiment before
 label_before = sentiment_clf.predict([embedding_test[:,0]])[0][0]
-print("Sentiment:", label_before)# NOTE 0=neg., 0,5=neut., 1=pos.
+print(f"Sentiment: {label_before} [0=neg., 0,5=neut., 1=pos.]")
 
 for layer in sentiment_clf.layers:
     layer.trainable = False
@@ -186,7 +194,7 @@ var = tf.Variable(embedding_)
 for i in range(100):
 
   # if True:
-  if i % 10 == 0:
+  if i % 1 == 0:
 
     updated = var.numpy()
 
