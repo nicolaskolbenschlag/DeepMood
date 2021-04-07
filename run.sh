@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --mem=5000
-#SBATCH -J DeepMood
+#SBATCH -J test
 
 export START_HERE=/nas/student/NicolasKolbenschlag/DeepMood
 source $START_HERE/venv/bin/activate

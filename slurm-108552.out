@@ -1,0 +1,84 @@
+2021-04-07 12:44:00.451667: I tensorflow/stream_executor/platform/default/dso_loader.cc:48] Successfully opened dynamic library libcudart.so.10.1
+2021-04-07 12:44:19.202155: I tensorflow/stream_executor/platform/default/dso_loader.cc:48] Successfully opened dynamic library libcuda.so.1
+2021-04-07 12:44:19.219881: E tensorflow/stream_executor/cuda/cuda_driver.cc:314] failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+2021-04-07 12:44:19.219942: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:169] retrieving CUDA diagnostic information for host: eihw-gpu2
+2021-04-07 12:44:19.219952: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:176] hostname: eihw-gpu2
+2021-04-07 12:44:19.220114: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:200] libcuda reported version is: 450.51.6
+2021-04-07 12:44:19.220154: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:204] kernel reported version is: 450.51.6
+2021-04-07 12:44:19.220163: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:310] kernel version seems to match DSO: 450.51.6
+2021-04-07 12:44:19.220613: I tensorflow/core/platform/cpu_feature_guard.cc:142] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN)to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2021-04-07 12:44:19.231299: I tensorflow/core/platform/profile_utils/cpu_utils.cc:104] CPU Frequency: 2399810000 Hz
+2021-04-07 12:44:19.231502: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x6ce0280 initialized for platform Host (this does not guarantee that XLA will be used). Devices:
+2021-04-07 12:44:19.231525: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): Host, Default Version
+Some layers from the model checkpoint at bert-base-uncased were not used when initializing TFBertModel: ['mlm___cls', 'nsp___cls']
+- This IS expected if you are initializing TFBertModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing TFBertModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+All the layers of TFBertModel were initialized from the model checkpoint at bert-base-uncased.
+If your task is similar to the task the model of the checkpoint was trained on, you can already use TFBertModel for predictions without further training.
+WARNING:tensorflow:The parameters `output_attentions`, `output_hidden_states` and `use_cache` cannot be updated when calling a model.They have to be set to True/False in the config object (i.e.: `config=XConfig.from_pretrained('name', output_attentions=True)`).
+WARNING:tensorflow:The parameter `return_dict` cannot be set in graph mode and will always be set to `True`.
+Loading dataset...
+                                                                                                                      text target
+0                                                                             "@switchfoot http://twitpic.com/2y1zl - Awww    "0"
+1        "is upset that he can't update his Facebook by texting it... and might cry as a result  School today also. Blah!"    "0"
+2                              "@Kenichan I dived many times for the ball. Managed to save 50%  The rest go out of bounds"    "0"
+3                                                                        "my whole body feels itchy and like its on fire "    "0"
+4                                                                                                     "@nationwideclass no    "0"
+...                                                                                                                    ...    ...
+1236018                                                            "@Sophistikated oh adrain  Haha you guys are so funny "    "4"
+1236019                                   "http://twitpic.com/6enz1 - this is now mine  thanks to the best boyfriend ever"    "4"
+1236020                                                                            "@lookitslizzle I do Creative Writing "    "4"
+1236021                                                                                "LOVES CRACKER BARREL  in mass now"    "4"
+1236022                                                 "Super Excited that i just found the MTV Movie Awards Online!!   n    "4"
+
+[1236023 rows x 2 columns]
+Labels for sentiment: (1236023,)
+Loading model...
+Text: This is a Test Text!
+input_ids: tf.Tensor(
+[[ 101 2023 2003 1037 3231 3793  999  102    0    0    0    0    0    0
+     0    0    0    0    0    0    0    0    0    0    0    0    0    0
+     0    0    0    0]], shape=(1, 32), dtype=int32)
+Decoded: this is a test text!
+Vocab_size: 30522
+----------------------------------------
+Decoder:
+Model: "decoder"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+input_1 (InputLayer)         [(None, 32, 768)]         0         
+_________________________________________________________________
+bidirectional (Bidirectional (None, 32, 1024)          5246976   
+_________________________________________________________________
+bidirectional_1 (Bidirection (None, 32, 1024)          6295552   
+_________________________________________________________________
+dense (Dense)                (None, 32, 30522)         31285050  
+=================================================================
+Total params: 42,827,578
+Trainable params: 42,827,578
+Non-trainable params: 0
+_________________________________________________________________
+Autoencoder:
+Model: "autoencoder"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+input_2 (InputLayer)         [(None, 32)]              0         
+_________________________________________________________________
+tf_bert_model (TFBertModel)  TFBaseModelOutputWithPool 109482240 
+_________________________________________________________________
+tf_op_layer_strided_slice (T [(None, 32, 768)]         0         
+_________________________________________________________________
+decoder (Functional)         (None, 32, 30522)         42827578  
+=================================================================
+Total params: 152,309,818
+Trainable params: 42,827,578
+Non-trainable params: 109,482,240
+_________________________________________________________________
+input_ids.shape = (1236023, 32)
+Traceback (most recent call last):
+  File "text2friendly.py", line 90, in <module>
+    dataset = tf.data.Dataset.from_generator(generator).shuffle(100).batch(32)
+TypeError: from_generator() missing 1 required positional argument: 'output_types'

@@ -1,0 +1,492 @@
+2021-04-07 12:35:21.542435: I tensorflow/stream_executor/platform/default/dso_loader.cc:48] Successfully opened dynamic library libcudart.so.10.1
+2021-04-07 12:35:35.783373: I tensorflow/stream_executor/platform/default/dso_loader.cc:48] Successfully opened dynamic library libcuda.so.1
+2021-04-07 12:35:35.799481: E tensorflow/stream_executor/cuda/cuda_driver.cc:314] failed call to cuInit: CUDA_ERROR_NO_DEVICE: no CUDA-capable device is detected
+2021-04-07 12:35:35.799537: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:169] retrieving CUDA diagnostic information for host: eihw-gpu2
+2021-04-07 12:35:35.799546: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:176] hostname: eihw-gpu2
+2021-04-07 12:35:35.799685: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:200] libcuda reported version is: 450.51.6
+2021-04-07 12:35:35.799731: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:204] kernel reported version is: 450.51.6
+2021-04-07 12:35:35.799740: I tensorflow/stream_executor/cuda/cuda_diagnostics.cc:310] kernel version seems to match DSO: 450.51.6
+2021-04-07 12:35:35.800227: I tensorflow/core/platform/cpu_feature_guard.cc:142] This TensorFlow binary is optimized with oneAPI Deep Neural Network Library (oneDNN)to use the following CPU instructions in performance-critical operations:  AVX2 FMA
+To enable them in other operations, rebuild TensorFlow with the appropriate compiler flags.
+2021-04-07 12:35:35.811431: I tensorflow/core/platform/profile_utils/cpu_utils.cc:104] CPU Frequency: 2399810000 Hz
+2021-04-07 12:35:35.811597: I tensorflow/compiler/xla/service/service.cc:168] XLA service 0x5591180 initialized for platform Host (this does not guarantee that XLA will be used). Devices:
+2021-04-07 12:35:35.811620: I tensorflow/compiler/xla/service/service.cc:176]   StreamExecutor device (0): Host, Default Version
+text2friendly.py:31: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df.dropna(inplace=True)
+Some layers from the model checkpoint at bert-base-uncased were not used when initializing TFBertModel: ['mlm___cls', 'nsp___cls']
+- This IS expected if you are initializing TFBertModel from the checkpoint of a model trained on another task or with another architecture (e.g. initializing a BertForSequenceClassification model from a BertForPreTraining model).
+- This IS NOT expected if you are initializing TFBertModel from the checkpoint of a model that you expect to be exactly identical (initializing a BertForSequenceClassification model from a BertForSequenceClassification model).
+All the layers of TFBertModel were initialized from the model checkpoint at bert-base-uncased.
+If your task is similar to the task the model of the checkpoint was trained on, you can already use TFBertModel for predictions without further training.
+WARNING:tensorflow:The parameters `output_attentions`, `output_hidden_states` and `use_cache` cannot be updated when calling a model.They have to be set to True/False in the config object (i.e.: `config=XConfig.from_pretrained('name', output_attentions=True)`).
+WARNING:tensorflow:The parameter `return_dict` cannot be set in graph mode and will always be set to `True`.
+WARNING:tensorflow:The parameters `output_attentions`, `output_hidden_states` and `use_cache` cannot be updated when calling a model.They have to be set to True/False in the config object (i.e.: `config=XConfig.from_pretrained('name', output_attentions=True)`).
+WARNING:tensorflow:The parameter `return_dict` cannot be set in graph mode and will always be set to `True`.
+WARNING:tensorflow:The parameters `output_attentions`, `output_hidden_states` and `use_cache` cannot be updated when calling a model.They have to be set to True/False in the config object (i.e.: `config=XConfig.from_pretrained('name', output_attentions=True)`).
+WARNING:tensorflow:The parameter `return_dict` cannot be set in graph mode and will always be set to `True`.
+Loading dataset...
+                                                                                                                     text        target
+"0"                                               that's a bummer.  You shoulda got David Carr of Third Day to do it. ;D"  "1467810369"
+"0"                           it's not behaving at all. i'm mad. why am i here? because I can't see you all over there. "  "1467811193"
+"0"                                                                                                      only a bit  LOL   "1467811594"
+"0"                                                                  idk why I did either. you never talk to me anymore "  "1467812771"
+"0"                                                                         but i didn't have a gun.    not really though  "1467812784"
+"0"                                            and asked to meet with her at Mid Valley today...but i've no time *sigh* "  "1467813992"
+"0"                                                                                                                   sad  "1467818603"
+"0"                           it looks like the twanking is still happening  Are ppl still having probs w/ BGs and UIDs?"  "1467819712"
+"0"                                                                                              tons of replies from you  "1467820906"
+"0"                                                                              and now I forget the name of the site. "  "1467821338"
+"0"                                                                          only that they are PoS! As much as I want to  "1467821715"
+"0"                                                            you'd think more shows would use music from the game. mmm"  "1467822389"
+"0"                                         it's out of commission  Wutcha playing? Have you copped 'Blood On The Sand'?"  "1467822687"
+"0"                                                      I've never gotten to experience the post coitus cigarette before  "1467823770"
+"0"                                                     no money.  how in the hell is min wage here 4 f'n clams an hour?"  "1467824967"
+"0"                                                                              I saw the failwhale allllll day today. "  "1467825084"
+"0"               Adidas shorts.......and black business socks and leather shoes  Lucky did not run into any cute girls."  "1467825883"
+"0"                                                he'd (and me'd) be glad to see your mug asap. Charger is still awol. "  "1467833690"
+"0"                                                                                   those fares really are unbelievable  "1467834227"
+"0"                                         but hates that she's had a sore throat all day. It's just getting worse too "  "1467834400"
+"0"                                                                                                          it's working  "1467835085"
+"0"                                                                              babe!!  My fam annoys me too. Thankfully  "1467835305"
+"0"   the ex is threatening to start sh** at my/our babies 1st Birthday party. what a jerk. and I still have a headache "  "1467836024"
+"0"                      do u really enjoy being with him ? if the problems are too constants u should think things more   "1467836111"
+"0"              grace...wana go steve's party or not?? SADLY SINCE ITS EASTER I WNT B ABLE 2 DO MUCH  BUT OHH WELL....."  "1467836500"
+"0"                                         I actually won one of my bracket pools! Too bad it wasn't the one for money "  "1467836576"
+"0"                                                                                          either  and i work for you!"  "1467836583"
+Labels for sentiment: (27,)
+Loading model...
+Text: This is a Test Text!
+input_ids: tf.Tensor(
+[[ 101 2023 2003 1037 3231 3793  999  102    0    0    0    0    0    0
+     0    0]], shape=(1, 16), dtype=int32)
+Decoded: this is a test text!
+Vocab_size: 30522
+--------------------
+Decoder:
+Model: "decoder"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+input_1 (InputLayer)         [(None, 16, 768)]         0         
+_________________________________________________________________
+bidirectional (Bidirectional (None, 16, 1024)          5246976   
+_________________________________________________________________
+bidirectional_1 (Bidirection (None, 16, 1024)          6295552   
+_________________________________________________________________
+dense (Dense)                (None, 16, 30522)         31285050  
+=================================================================
+Total params: 42,827,578
+Trainable params: 42,827,578
+Non-trainable params: 0
+_________________________________________________________________
+Autoencoder:
+Model: "autoencoder"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+input_2 (InputLayer)         [(None, 16)]              0         
+_________________________________________________________________
+tf_bert_model (TFBertModel)  TFBaseModelOutputWithPool 109482240 
+_________________________________________________________________
+tf_op_layer_strided_slice (T [(None, 16, 768)]         0         
+_________________________________________________________________
+decoder (Functional)         (None, 16, 30522)         42827578  
+=================================================================
+Total params: 152,309,818
+Trainable params: 42,827,578
+Non-trainable params: 109,482,240
+_________________________________________________________________
+input_ids.shape = (27, 16)
+Fitting autoencoder...
+Epoch 1/10
+      1/Unknown - 0s 227us/step - loss: 10.32921/1 [==============================] - 0s 199ms/step - loss: 10.3292
+Epoch 2/10
+1/1 [==============================] - ETA: 0s - loss: 10.17231/1 [==============================] - 0s 570us/step - loss: 10.1723
+Epoch 3/10
+1/1 [==============================] - ETA: 0s - loss: 9.05611/1 [==============================] - 0s 1ms/step - loss: 9.0561
+Epoch 4/10
+1/1 [==============================] - ETA: 0s - loss: 6.66711/1 [==============================] - 0s 358us/step - loss: 6.6671
+Epoch 5/10
+1/1 [==============================] - ETA: 0s - loss: 5.68311/1 [==============================] - 0s 684us/step - loss: 5.6831
+Epoch 6/10
+1/1 [==============================] - ETA: 0s - loss: 5.29401/1 [==============================] - 0s 869us/step - loss: 5.2940
+Epoch 7/10
+1/1 [==============================] - ETA: 0s - loss: 5.21271/1 [==============================] - 0s 823us/step - loss: 5.2127
+Epoch 8/10
+1/1 [==============================] - ETA: 0s - loss: 5.20261/1 [==============================] - 0s 368us/step - loss: 5.2026
+Epoch 9/10
+1/1 [==============================] - ETA: 0s - loss: 5.20041/1 [==============================] - 0s 419us/step - loss: 5.2004
+Epoch 10/10
+1/1 [==============================] - ETA: 0s - loss: 5.19931/1 [==============================] - 0s 1ms/step - loss: 5.1993
+WARNING:tensorflow:The parameters `output_attentions`, `output_hidden_states` and `use_cache` cannot be updated when calling a model.They have to be set to True/False in the config object (i.e.: `config=XConfig.from_pretrained('name', output_attentions=True)`).
+WARNING:tensorflow:The parameter `return_dict` cannot be set in graph mode and will always be set to `True`.
+Real: [CLS] it's not behaving at all. i'm mad [SEP]
+Model output: (1, 16, 30522)
+Pred: [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD] [PAD]
+--------------------
+Sentiment model:
+Model: "sentiment_classifier"
+_________________________________________________________________
+Layer (type)                 Output Shape              Param #   
+=================================================================
+input_3 (InputLayer)         [(None, 768)]             0         
+_________________________________________________________________
+dense_1 (Dense)              (None, 10)                7690      
+_________________________________________________________________
+dense_2 (Dense)              (None, 1)                 11        
+=================================================================
+Total params: 7,701
+Trainable params: 7,701
+Non-trainable params: 0
+_________________________________________________________________
+Creating embeddings as features for sentiment estimator...
+Embeddings for sentiment: (27, 768)
+Fitting sentiment model...
+Epoch 1/20
+1/1 [==============================] - ETA: 0s - loss: 0.31891/1 [==============================] - 0s 2ms/step - loss: 0.3189
+Epoch 2/20
+1/1 [==============================] - ETA: 0s - loss: 0.24941/1 [==============================] - 0s 199us/step - loss: 0.2494
+Epoch 3/20
+1/1 [==============================] - ETA: 0s - loss: 0.18871/1 [==============================] - 0s 200us/step - loss: 0.1887
+Epoch 4/20
+1/1 [==============================] - ETA: 0s - loss: 0.13911/1 [==============================] - 0s 197us/step - loss: 0.1391
+Epoch 5/20
+1/1 [==============================] - ETA: 0s - loss: 0.10131/1 [==============================] - 0s 231us/step - loss: 0.1013
+Epoch 6/20
+1/1 [==============================] - ETA: 0s - loss: 0.07351/1 [==============================] - 0s 197us/step - loss: 0.0735
+Epoch 7/20
+1/1 [==============================] - ETA: 0s - loss: 0.05481/1 [==============================] - 0s 231us/step - loss: 0.0548
+Epoch 8/20
+1/1 [==============================] - ETA: 0s - loss: 0.04121/1 [==============================] - 0s 275us/step - loss: 0.0412
+Epoch 9/20
+1/1 [==============================] - ETA: 0s - loss: 0.03101/1 [==============================] - 0s 196us/step - loss: 0.0310
+Epoch 10/20
+1/1 [==============================] - ETA: 0s - loss: 0.02341/1 [==============================] - 0s 197us/step - loss: 0.0234
+Epoch 11/20
+1/1 [==============================] - ETA: 0s - loss: 0.01801/1 [==============================] - 0s 196us/step - loss: 0.0180
+Epoch 12/20
+1/1 [==============================] - ETA: 0s - loss: 0.01401/1 [==============================] - 0s 198us/step - loss: 0.0140
+Epoch 13/20
+1/1 [==============================] - ETA: 0s - loss: 0.01111/1 [==============================] - 0s 239us/step - loss: 0.0111
+Epoch 14/20
+1/1 [==============================] - ETA: 0s - loss: 0.00881/1 [==============================] - 0s 197us/step - loss: 0.0088
+Epoch 15/20
+1/1 [==============================] - ETA: 0s - loss: 0.00721/1 [==============================] - 0s 206us/step - loss: 0.0072
+Epoch 16/20
+1/1 [==============================] - ETA: 0s - loss: 0.00591/1 [==============================] - 0s 226us/step - loss: 0.0059
+Epoch 17/20
+1/1 [==============================] - ETA: 0s - loss: 0.00491/1 [==============================] - 0s 197us/step - loss: 0.0049
+Epoch 18/20
+1/1 [==============================] - ETA: 0s - loss: 0.00411/1 [==============================] - 0s 196us/step - loss: 0.0041
+Epoch 19/20
+1/1 [==============================] - ETA: 0s - loss: 0.00351/1 [==============================] - 0s 196us/step - loss: 0.0035
+Epoch 20/20
+1/1 [==============================] - ETA: 0s - loss: 0.00301/1 [==============================] - 0s 197us/step - loss: 0.0030
+Changing the sentiment...
+Original text: The weather looks realy horrible
+Creating feature embedding...
+embedding_test.shape: (1, 16, 768)
+Sentiment: 0.03651106357574463 [0=neg., 0,5=neut., 1=pos.]
+Step 000:	Sentiment: 0.03651
+		Text: 
+
+Step 001:	Sentiment: nan
+		Text: 
+
+Step 002:	Sentiment: nan
+		Text: 
+
+Step 003:	Sentiment: nan
+		Text: 
+
+Step 004:	Sentiment: nan
+		Text: 
+
+Step 005:	Sentiment: nan
+		Text: 
+
+Step 006:	Sentiment: nan
+		Text: 
+
+Step 007:	Sentiment: nan
+		Text: 
+
+Step 008:	Sentiment: nan
+		Text: 
+
+Step 009:	Sentiment: nan
+		Text: 
+
+Step 010:	Sentiment: nan
+		Text: 
+
+Step 011:	Sentiment: nan
+		Text: 
+
+Step 012:	Sentiment: nan
+		Text: 
+
+Step 013:	Sentiment: nan
+		Text: 
+
+Step 014:	Sentiment: nan
+		Text: 
+
+Step 015:	Sentiment: nan
+		Text: 
+
+Step 016:	Sentiment: nan
+		Text: 
+
+Step 017:	Sentiment: nan
+		Text: 
+
+Step 018:	Sentiment: nan
+		Text: 
+
+Step 019:	Sentiment: nan
+		Text: 
+
+Step 020:	Sentiment: nan
+		Text: 
+
+Step 021:	Sentiment: nan
+		Text: 
+
+Step 022:	Sentiment: nan
+		Text: 
+
+Step 023:	Sentiment: nan
+		Text: 
+
+Step 024:	Sentiment: nan
+		Text: 
+
+Step 025:	Sentiment: nan
+		Text: 
+
+Step 026:	Sentiment: nan
+		Text: 
+
+Step 027:	Sentiment: nan
+		Text: 
+
+Step 028:	Sentiment: nan
+		Text: 
+
+Step 029:	Sentiment: nan
+		Text: 
+
+Step 030:	Sentiment: nan
+		Text: 
+
+Step 031:	Sentiment: nan
+		Text: 
+
+Step 032:	Sentiment: nan
+		Text: 
+
+Step 033:	Sentiment: nan
+		Text: 
+
+Step 034:	Sentiment: nan
+		Text: 
+
+Step 035:	Sentiment: nan
+		Text: 
+
+Step 036:	Sentiment: nan
+		Text: 
+
+Step 037:	Sentiment: nan
+		Text: 
+
+Step 038:	Sentiment: nan
+		Text: 
+
+Step 039:	Sentiment: nan
+		Text: 
+
+Step 040:	Sentiment: nan
+		Text: 
+
+Step 041:	Sentiment: nan
+		Text: 
+
+Step 042:	Sentiment: nan
+		Text: 
+
+Step 043:	Sentiment: nan
+		Text: 
+
+Step 044:	Sentiment: nan
+		Text: 
+
+Step 045:	Sentiment: nan
+		Text: 
+
+Step 046:	Sentiment: nan
+		Text: 
+
+Step 047:	Sentiment: nan
+		Text: 
+
+Step 048:	Sentiment: nan
+		Text: 
+
+Step 049:	Sentiment: nan
+		Text: 
+
+Step 050:	Sentiment: nan
+		Text: 
+
+Step 051:	Sentiment: nan
+		Text: 
+
+Step 052:	Sentiment: nan
+		Text: 
+
+Step 053:	Sentiment: nan
+		Text: 
+
+Step 054:	Sentiment: nan
+		Text: 
+
+Step 055:	Sentiment: nan
+		Text: 
+
+Step 056:	Sentiment: nan
+		Text: 
+
+Step 057:	Sentiment: nan
+		Text: 
+
+Step 058:	Sentiment: nan
+		Text: 
+
+Step 059:	Sentiment: nan
+		Text: 
+
+Step 060:	Sentiment: nan
+		Text: 
+
+Step 061:	Sentiment: nan
+		Text: 
+
+Step 062:	Sentiment: nan
+		Text: 
+
+Step 063:	Sentiment: nan
+		Text: 
+
+Step 064:	Sentiment: nan
+		Text: 
+
+Step 065:	Sentiment: nan
+		Text: 
+
+Step 066:	Sentiment: nan
+		Text: 
+
+Step 067:	Sentiment: nan
+		Text: 
+
+Step 068:	Sentiment: nan
+		Text: 
+
+Step 069:	Sentiment: nan
+		Text: 
+
+Step 070:	Sentiment: nan
+		Text: 
+
+Step 071:	Sentiment: nan
+		Text: 
+
+Step 072:	Sentiment: nan
+		Text: 
+
+Step 073:	Sentiment: nan
+		Text: 
+
+Step 074:	Sentiment: nan
+		Text: 
+
+Step 075:	Sentiment: nan
+		Text: 
+
+Step 076:	Sentiment: nan
+		Text: 
+
+Step 077:	Sentiment: nan
+		Text: 
+
+Step 078:	Sentiment: nan
+		Text: 
+
+Step 079:	Sentiment: nan
+		Text: 
+
+Step 080:	Sentiment: nan
+		Text: 
+
+Step 081:	Sentiment: nan
+		Text: 
+
+Step 082:	Sentiment: nan
+		Text: 
+
+Step 083:	Sentiment: nan
+		Text: 
+
+Step 084:	Sentiment: nan
+		Text: 
+
+Step 085:	Sentiment: nan
+		Text: 
+
+Step 086:	Sentiment: nan
+		Text: 
+
+Step 087:	Sentiment: nan
+		Text: 
+
+Step 088:	Sentiment: nan
+		Text: 
+
+Step 089:	Sentiment: nan
+		Text: 
+
+Step 090:	Sentiment: nan
+		Text: 
+
+Step 091:	Sentiment: nan
+		Text: 
+
+Step 092:	Sentiment: nan
+		Text: 
+
+Step 093:	Sentiment: nan
+		Text: 
+
+Step 094:	Sentiment: nan
+		Text: 
+
+Step 095:	Sentiment: nan
+		Text: 
+
+Step 096:	Sentiment: nan
+		Text: 
+
+Step 097:	Sentiment: nan
+		Text: 
+
+Step 098:	Sentiment: nan
+		Text: 
+
+Step 099:	Sentiment: nan
+		Text: 
+
