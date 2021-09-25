@@ -16,7 +16,10 @@ PyYAML==5.4.1
 regex==2021.8.28
 requests==2.26.0
 sacremoses==0.0.45
+scikit-learn==1.0
+scipy==1.7.1
 six==1.16.0
+threadpoolctl==2.2.0
 tokenizers==0.10.3
 torch==1.9.1
 tqdm==4.62.3
