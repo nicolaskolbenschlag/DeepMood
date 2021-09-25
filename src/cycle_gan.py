@@ -96,14 +96,14 @@ class GAN(torch.nn.Module):
         generated, encoding_input = self.generator(input_ids=input_ids)        
         generated = generated.argmax(dim=2)
         sentiment, encoding_output = self.discriminator(generated, attention_mask=attention_mask)
-        return sentiment, encoding_input, encoding_output
+        return sentiment, encoding_input, encoding_output, generated
 
 def main() -> None:
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
 
-    epochs = 2
-    batch_size = 1024
+    epochs = 3
+    batch_size = 64
     
     dataset = Dataset()
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size)
@@ -129,7 +129,7 @@ def main() -> None:
         losses_discriminator += [[]]
         losses_gan += [[]]
         
-        for i_batch, data in enumerate(dataloader):
+        for i_batch, data in enumerate(dataloader, 1):
 
             input_ids = data["input_ids"].to(device)
             attention_mask = data["attention_mask"].to(device)
@@ -141,7 +141,7 @@ def main() -> None:
                 input_ids=input_ids,
                 attention_mask=attention_mask
             )[0]
-            loss_discriminator = loss_fn_discriminator(outputs, targets)            
+            loss_discriminator = loss_fn_discriminator(outputs, targets)
             losses_discriminator[-1] += [loss_discriminator.item()]
 
             loss_discriminator.backward()
@@ -150,13 +150,20 @@ def main() -> None:
             scheduler_discriminator.step()
             optimizer_discriminator.zero_grad()
 
-            # TODO train GAN (generator followed by discriminator with generator weigths flozen)
+            # NOTE train GAN (generator followed by discriminator with generator weigths flozen)
             negative_sentiment_mask = (targets == 0.).squeeze(dim=1)
             gan.un_freeze_weights()
             outputs = gan(
                 input_ids=input_ids[negative_sentiment_mask],
                 attention_mask=attention_mask[negative_sentiment_mask]
             )
+
+            # NOTE print generated sentence
+            n = np.random.randint(0, negative_sentiment_mask.sum() + 1)
+            print(f"Original sentence: {dataset.tokenizer.decode(input_ids[negative_sentiment_mask][n])}")
+            print(f"Predicted sentiment: {outputs[0][n].item()}")
+            print(f"Generated sentence: {dataset.tokenizer.decode(outputs[3][n])}")
+
             targets_gan = torch.tensor([1.] * negative_sentiment_mask.sum(), dtype=torch.float).unsqueeze(dim=1).to(device)
             loss_gan_sentiment = loss_fn_discriminator(outputs[0], targets_gan)
             encoding_input = outputs[1]
@@ -177,11 +184,16 @@ def main() -> None:
 
             print(f"Epoch {epoch} [{i_batch}] - discriminator [MSE] {loss_discriminator.item()}, GAN [MSE] {loss_gan_sentiment.item()}, GAN [Cosine] {loss_gan_content}")
 
+            if i_batch == 10:
+                break
+
     
     # NOTE evaluation
     losses_discriminator = np.array(losses_discriminator).mean(axis=1)
     
     # save_model(gan, "gan.pth")
+
+    # TODO check weights freezing
 
 if __name__ == "__main__":
     main()
