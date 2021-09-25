@@ -1,7 +1,6 @@
 import pandas as pd
 import transformers
 import torch
-import sklearn.preprocessing
 import numpy as np
 
 MODEL_NAME = "bert-base-uncased"
@@ -12,7 +11,8 @@ class Dataset(torch.utils.data.Dataset):
         self.tokenizer = transformers.BertTokenizer.from_pretrained(MODEL_NAME)
         df = pd.read_csv("data/IMDB Dataset.csv")
         self.texts = df["review"].to_list()
-        self.labels = sklearn.preprocessing.LabelEncoder().fit_transform(df["sentiment"].to_list())        
+        # self.labels = sklearn.preprocessing.LabelEncoder().fit_transform(df["sentiment"].to_list())        
+        self.labels = [1. if y == "positive" else 0. for y in df["sentiment"].to_list()]
     
     def __len__(self):
         return len(self.texts)
@@ -22,7 +22,7 @@ class Dataset(torch.utils.data.Dataset):
         label = self.labels[idx]
 
         encoding = self.tokenizer.encode_plus(
-            text,
+            text=text,
             max_length=32,
             add_special_tokens=True,
             return_token_type_ids=False,
@@ -52,24 +52,34 @@ class Discriminator(torch.nn.Module):
     def __init__(self):
         super().__init__()
         self.encoder = transformers.BertModel.from_pretrained(MODEL_NAME)
+        self.encoder.eval()
         self.dropout = torch.nn.Dropout(.3)
         self.out = torch.nn.Linear(self.encoder.config.hidden_size, 1)
 
     def forward(self, input_ids, attention_mask):
         output = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
-        pooled_output = output["pooler_output"]
-        output = self.dropout(pooled_output)
-        return self.out(output)
-
+        encoding = output["pooler_output"]
+        output = self.dropout(encoding)
+        return torch.sigmoid(self.out(output)), encoding
+    
 class Generator(torch.nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.autoencoder = transformers.EncoderDecoderModel.from_encoder_decoder_pretrained(MODEL_NAME, MODEL_NAME)
-        # TODO encoder weights frozen (reduce required computing resources)?
+        self.encoder_decoder = transformers.EncoderDecoderModel.from_encoder_decoder_pretrained(MODEL_NAME, MODEL_NAME)
+        
+        # NOTE encoder weights frozen (reduce required computing resources)
+        self.encoder_decoder.get_encoder().eval()
     
     def forward(self, input_ids):
-        return self.autoencoder(input_ids)
+        output = self.encoder_decoder(input_ids=input_ids, decoder_input_ids=input_ids)
+        encoding_input = output["encoder_last_hidden_state"]
+        
+        # TODO fix this?! (maybe encode both original and generated afterwards)
+        encoding_input = encoding_input[:,-1,:]
+        
+        generated = output["logits"]
+        return generated, encoding_input
 
 class GAN(torch.nn.Module):
 
@@ -78,29 +88,39 @@ class GAN(torch.nn.Module):
         self.generator = generator
         self.discriminator = discriminator
     
-    def forward(self, input_ids):
-        return self.discriminator(self.generator(input_ids))
+    def un_freeze_weights(self):
+        self.generator.train()
+        self.discriminator.eval()
+    
+    def forward(self, input_ids, attention_mask):
+        generated, encoding_input = self.generator(input_ids=input_ids)        
+        generated = generated.argmax(dim=2)
+        sentiment, encoding_output = self.discriminator(generated, attention_mask=attention_mask)
+        return sentiment, encoding_input, encoding_output
 
 def main() -> None:
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
 
-    epochs = 100
+    epochs = 2
+    batch_size = 1024
     
     dataset = Dataset()
-    dataloader = torch.utils.data.DataLoader(dataset, batch_size=64)
+    dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size)
 
     generator = Generator().to(device)
 
     discriminator = Discriminator().to(device)
     optimizer_discriminator = transformers.AdamW(discriminator.parameters(), lr=2e-5, correct_bias=False)
     scheduler_discriminator = transformers.get_linear_schedule_with_warmup(optimizer_discriminator, num_warmup_steps=0, num_training_steps=len(dataloader) * epochs)
-    loss_discriminator = torch.nn.MSELoss().to(device)
+    loss_fn_discriminator = torch.nn.MSELoss().to(device)
 
-    gan = GAN(generator, discriminator)#.to(device)
+    gan = GAN(generator, discriminator).to(device)
+    optimizer_gan = transformers.AdamW(gan.parameters(), lr=2e-5, correct_bias=False)
+    scheduler_gan = transformers.get_linear_schedule_with_warmup(optimizer_gan, num_warmup_steps=0, num_training_steps=len(dataloader) * epochs)
+    loss_fn_gan_content = torch.nn.CosineSimilarity().to(device)
 
     # NOTE training
-
     losses_discriminator = []
     losses_gan = []
     
@@ -109,26 +129,53 @@ def main() -> None:
         losses_discriminator += [[]]
         losses_gan += [[]]
         
-        for data in dataloader:
+        for i_batch, data in enumerate(dataloader):
 
             input_ids = data["input_ids"].to(device)
             attention_mask = data["attention_mask"].to(device)
-            targets = data["targets"].to(device)
+            targets = data["targets"].unsqueeze(dim=1).to(device)
 
             # NOTE train discriminator (sentiment pos. or neg.?)
-            outputs = discriminator(input_ids=input_ids, attention_mask=attention_mask)
-            loss = loss_discriminator(outputs, targets)
-            
-            losses_discriminator[-1] += [loss]
-            print(f"Epoch {epoch}: {loss.item()}")
+            discriminator.train()
+            outputs = discriminator(
+                input_ids=input_ids,
+                attention_mask=attention_mask
+            )[0]
+            loss_discriminator = loss_fn_discriminator(outputs, targets)            
+            losses_discriminator[-1] += [loss_discriminator.item()]
 
-            loss.backward()
+            loss_discriminator.backward()
             torch.nn.utils.clip_grad_norm_(discriminator.parameters(), max_norm=1.)
             optimizer_discriminator.step()
             scheduler_discriminator.step()
             optimizer_discriminator.zero_grad()
 
             # TODO train GAN (generator followed by discriminator with generator weigths flozen)
+            negative_sentiment_mask = (targets == 0.).squeeze(dim=1)
+            gan.un_freeze_weights()
+            outputs = gan(
+                input_ids=input_ids[negative_sentiment_mask],
+                attention_mask=attention_mask[negative_sentiment_mask]
+            )
+            targets_gan = torch.tensor([1.] * negative_sentiment_mask.sum(), dtype=torch.float).unsqueeze(dim=1).to(device)
+            loss_gan_sentiment = loss_fn_discriminator(outputs[0], targets_gan)
+            encoding_input = outputs[1]
+            encoding_output = outputs[2]
+            
+            content_similarity = loss_fn_gan_content(encoding_input, encoding_output)
+            loss_gan_content = - content_similarity.mean()
+            alpha = .5
+            loss_gan = alpha * loss_gan_sentiment + (1. - alpha) * loss_gan_content
+            
+            losses_gan[-1] += [loss_gan.item()]
+
+            loss_gan.backward()
+            torch.nn.utils.clip_grad_norm_(gan.parameters(), max_norm=1.)
+            optimizer_gan.step()
+            scheduler_gan.step()
+            optimizer_gan.zero_grad()
+
+            print(f"Epoch {epoch} [{i_batch}] - discriminator [MSE] {loss_discriminator.item()}, GAN [MSE] {loss_gan_sentiment.item()}, GAN [Cosine] {loss_gan_content}")
 
     
     # NOTE evaluation

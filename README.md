@@ -19,6 +19,7 @@ $python text2friendly.py
 ## Usage
 
 * The service could be used be messaging app providers (like Signal, WhatsApp or Gmail) to provide their customers suggestions on how to rewrite their messages.
+* Each company / srevice that interacts with customers by language wants to be as friendly and positive as possible.
 
 ## Credits
 
