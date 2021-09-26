@@ -52,7 +52,6 @@ class Discriminator(torch.nn.Module):
     def __init__(self):
         super().__init__()
         self.encoder = transformers.BertModel.from_pretrained(MODEL_NAME)
-        self.encoder.eval()
         self.dropout = torch.nn.Dropout(.3)
         self.out = torch.nn.Linear(self.encoder.config.hidden_size, 1)
 
@@ -62,14 +61,18 @@ class Discriminator(torch.nn.Module):
         output = self.dropout(encoding)
         return torch.sigmoid(self.out(output)), encoding
     
+    def unfreeze(self):
+        self.train()
+        self.encoder.eval()
+    
+    def freeze(self):
+        self.eval()
+    
 class Generator(torch.nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.encoder_decoder = transformers.EncoderDecoderModel.from_encoder_decoder_pretrained(MODEL_NAME, MODEL_NAME)
-        
-        # NOTE encoder weights frozen (reduce required computing resources)
-        self.encoder_decoder.get_encoder().eval()
+        self.encoder_decoder = transformers.EncoderDecoderModel.from_encoder_decoder_pretrained(MODEL_NAME, MODEL_NAME)    
     
     def forward(self, input_ids):
         output = self.encoder_decoder(input_ids=input_ids, decoder_input_ids=input_ids)
@@ -81,6 +84,11 @@ class Generator(torch.nn.Module):
         generated = output["logits"]
         return generated, encoding_input
 
+    def unfreeze(self):
+        self.train()
+        # NOTE encoder weights frozen (reduce required computing resources)
+        self.encoder_decoder.get_encoder().eval()
+
 class GAN(torch.nn.Module):
 
     def __init__(self, generator: torch.nn.Module, discriminator: torch.nn.Module):
@@ -89,8 +97,8 @@ class GAN(torch.nn.Module):
         self.discriminator = discriminator
     
     def un_freeze_weights(self):
-        self.generator.train()
-        self.discriminator.eval()
+        self.generator.unfreeze()
+        self.discriminator.freeze()
     
     def forward(self, input_ids, attention_mask):
         generated, encoding_input = self.generator(input_ids=input_ids)        
@@ -136,7 +144,7 @@ def main() -> None:
             targets = data["targets"].unsqueeze(dim=1).to(device)
 
             # NOTE train discriminator (sentiment pos. or neg.?)
-            discriminator.train()
+            discriminator.unfreeze()
             outputs = discriminator(
                 input_ids=input_ids,
                 attention_mask=attention_mask
@@ -159,7 +167,7 @@ def main() -> None:
             )
 
             # NOTE print generated sentence
-            n = np.random.randint(0, negative_sentiment_mask.sum() + 1)
+            n = np.random.randint(0, negative_sentiment_mask.sum())
             print(f"Original sentence: {dataset.tokenizer.decode(input_ids[negative_sentiment_mask][n])}")
             print(f"Predicted sentiment: {outputs[0][n].item()}")
             print(f"Generated sentence: {dataset.tokenizer.decode(outputs[3][n])}")
