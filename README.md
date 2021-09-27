@@ -23,6 +23,10 @@ $python neural_sytle_transfer.py
 Here, we adopt the architectore from [CycleGAN](https://junyanz.github.io/CycleGAN/) for text paraphrasing.
 We train a generator for seq2seq modelling and a discriminator to evaluate the generator's output like **CycleGAN**.
 
+1. generator: input -> seq2seq -> pos. sentiment output
+2. discriminator: sample pos. sentiment?
+3. generator: bert encodings -> content similarity with encodings of input
+
 ### Run CycleGAN for text
 
 ```shell
