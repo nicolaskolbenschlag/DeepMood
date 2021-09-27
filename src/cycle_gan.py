@@ -4,6 +4,7 @@ import torch
 import numpy as np
 
 MODEL_NAME = "bert-base-uncased"
+MAX_LENGTH = 32#128
 
 class Dataset(torch.utils.data.Dataset):
 
@@ -11,7 +12,6 @@ class Dataset(torch.utils.data.Dataset):
         self.tokenizer = transformers.BertTokenizer.from_pretrained(MODEL_NAME)
         df = pd.read_csv("data/IMDB Dataset.csv")
         self.texts = df["review"].to_list()
-        # self.labels = sklearn.preprocessing.LabelEncoder().fit_transform(df["sentiment"].to_list())        
         self.labels = [1. if y == "positive" else 0. for y in df["sentiment"].to_list()]
     
     def __len__(self):
@@ -23,10 +23,11 @@ class Dataset(torch.utils.data.Dataset):
 
         encoding = self.tokenizer.encode_plus(
             text=text,
-            max_length=32,
+            max_length=MAX_LENGTH,
             add_special_tokens=True,
             return_token_type_ids=False,
             pad_to_max_length=True,
+            truncation=True,
             return_attention_mask=True,
             return_tensors="pt"
         )
@@ -72,22 +73,26 @@ class Generator(torch.nn.Module):
 
     def __init__(self):
         super().__init__()
-        self.encoder_decoder = transformers.EncoderDecoderModel.from_encoder_decoder_pretrained(MODEL_NAME, MODEL_NAME)    
+        self.encoder_decoder = transformers.EncoderDecoderModel.from_encoder_decoder_pretrained(MODEL_NAME, MODEL_NAME, max_length=MAX_LENGTH)
     
     def forward(self, input_ids):
+        output = self.encoder_decoder.generate(input_ids=input_ids, decoder_input_ids=input_ids)#[:2]
+        generated = output[:,:-1]
+
         output = self.encoder_decoder(input_ids=input_ids, decoder_input_ids=input_ids)
         encoding_input = output["encoder_last_hidden_state"]
-        
         # TODO fix this?! (maybe encode both original and generated afterwards)
         encoding_input = encoding_input[:,-1,:]
         
-        generated = output["logits"]
         return generated, encoding_input
 
     def unfreeze(self):
         self.train()
         # NOTE encoder weights frozen (reduce required computing resources)
         self.encoder_decoder.get_encoder().eval()
+    
+    def freeze(self):
+        self.eval()
 
 class GAN(torch.nn.Module):
 
@@ -101,17 +106,29 @@ class GAN(torch.nn.Module):
         self.discriminator.freeze()
     
     def forward(self, input_ids, attention_mask):
-        generated, encoding_input = self.generator(input_ids=input_ids)        
-        generated = generated.argmax(dim=2)
+        generated, encoding_input = self.generator(input_ids=input_ids)
         sentiment, encoding_output = self.discriminator(generated, attention_mask=attention_mask)
         return sentiment, encoding_input, encoding_output, generated
+
+class ContentSimilarityMetric(torch.nn.Module):
+
+    def __init__(self):
+        super().__init__()
+        self.encoder = transformers.BertModel.from_pretrained(MODEL_NAME)
+        self.encoder.eval()
+    
+    def forward(self, input_ids_1, input_ids_2):
+        encoding_1 = self.encoder(input_ids=input_ids_1)["pooler_output"]
+        encoding_2 = self.encoder(input_ids=input_ids_2)["pooler_output"]
+        similarity = torch.nn.functional.cosine_similarity(encoding_1, encoding_2)
+        return similarity
 
 def main() -> None:
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"Device: {device}")
 
     epochs = 3
-    batch_size = 64
+    batch_size = 8#64
     
     dataset = Dataset()
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size)
@@ -160,6 +177,7 @@ def main() -> None:
 
             # NOTE train GAN (generator followed by discriminator with generator weigths flozen)
             negative_sentiment_mask = (targets == 0.).squeeze(dim=1)
+            
             gan.un_freeze_weights()
             outputs = gan(
                 input_ids=input_ids[negative_sentiment_mask],
@@ -168,8 +186,7 @@ def main() -> None:
 
             # NOTE print generated sentence
             n = np.random.randint(0, negative_sentiment_mask.sum())
-            print(f"Original sentence: {dataset.tokenizer.decode(input_ids[negative_sentiment_mask][n])}")
-            print(f"Predicted sentiment: {outputs[0][n].item()}")
+            print(f"Original sentence: {dataset.tokenizer.decode(input_ids[negative_sentiment_mask][n])} [sentiment: {outputs[0][n].item()}]")
             print(f"Generated sentence: {dataset.tokenizer.decode(outputs[3][n])}")
 
             targets_gan = torch.tensor([1.] * negative_sentiment_mask.sum(), dtype=torch.float).unsqueeze(dim=1).to(device)
@@ -200,8 +217,6 @@ def main() -> None:
     losses_discriminator = np.array(losses_discriminator).mean(axis=1)
     
     # save_model(gan, "gan.pth")
-
-    # TODO check weights freezing
 
 if __name__ == "__main__":
     main()
