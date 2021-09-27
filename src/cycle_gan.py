@@ -4,7 +4,7 @@ import torch
 import numpy as np
 
 MODEL_NAME = "bert-base-uncased"
-MAX_LENGTH = 32#128
+MAX_LENGTH = 64#128
 
 class Dataset(torch.utils.data.Dataset):
 
@@ -24,9 +24,9 @@ class Dataset(torch.utils.data.Dataset):
         encoding = self.tokenizer.encode_plus(
             text=text,
             max_length=MAX_LENGTH,
+            padding="max_length",
             add_special_tokens=True,
             return_token_type_ids=False,
-            pad_to_max_length=True,
             truncation=True,
             return_attention_mask=True,
             return_tensors="pt"
@@ -76,15 +76,17 @@ class Generator(torch.nn.Module):
         self.encoder_decoder = transformers.EncoderDecoderModel.from_encoder_decoder_pretrained(MODEL_NAME, MODEL_NAME, max_length=MAX_LENGTH)
     
     def forward(self, input_ids):
-        output = self.encoder_decoder.generate(input_ids=input_ids, decoder_input_ids=input_ids)#[:2]
+        output = self.encoder_decoder.generate(input_ids=input_ids, decoder_start_token_id=self.encoder_decoder.config.decoder.pad_token_id)
+        # NOTE remove separator token
         generated = output[:,:-1]
 
-        output = self.encoder_decoder(input_ids=input_ids, decoder_input_ids=input_ids)
-        encoding_input = output["encoder_last_hidden_state"]
+        # output = self.encoder_decoder(input_ids=input_ids)#, decoder_start_token_id=self.encoder_decoder.config.decoder.pad_token_id)
+        # encoding_input = output["encoder_last_hidden_state"]
         # TODO fix this?! (maybe encode both original and generated afterwards)
-        encoding_input = encoding_input[:,-1,:]
+        # encoding_input = encoding_input[:,-1,:]
         
-        return generated, encoding_input
+        # return generated, encoding_input
+        return generated, None
 
     def unfreeze(self):
         self.train()
@@ -128,7 +130,7 @@ def main() -> None:
     print(f"Device: {device}")
 
     epochs = 3
-    batch_size = 8#64
+    batch_size = 64
     
     dataset = Dataset()
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size)
