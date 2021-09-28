@@ -51,6 +51,7 @@ class Generator(torch.nn.Module):
         self.encoder_decoder = transformers.EncoderDecoderModel.from_encoder_decoder_pretrained(MODEL_NAME, MODEL_NAME, max_length=MAX_LENGTH)
     
     def forward(self, input_ids):
+        # TODO give is some of the input_ids as a start (decoder_input_ids=input_ids[:5])
         generated = self.encoder_decoder.generate(input_ids=input_ids, decoder_start_token_id=self.encoder_decoder.config.decoder.pad_token_id)
         return generated
 
@@ -78,7 +79,7 @@ class Discriminator(torch.nn.Module):
 
     def forward(self, input_ids, attention_mask):
         output = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
-        encoding = output["pooler_output"]
+        encoding = output["last_hidden_state"][:,0,:]
         output = self.dropout(encoding)
         return torch.sigmoid(self.out(output))
     
@@ -120,8 +121,8 @@ class ContentSimilarityLoss(torch.nn.Module):
         self.encoder.eval()
     
     def forward(self, input_ids_1, input_ids_2):
-        encoding_1 = self.encoder(input_ids=input_ids_1)["pooler_output"]
-        encoding_2 = self.encoder(input_ids=input_ids_2)["pooler_output"]
+        encoding_1 = self.encoder(input_ids=input_ids_1)["last_hidden_state"][:,0,:]
+        encoding_2 = self.encoder(input_ids=input_ids_2)["last_hidden_state"][:,0,:]
         similarity = torch.nn.functional.cosine_similarity(encoding_1, encoding_2)
         similarity = (- similarity + 1) / 2
         return similarity.mean()
@@ -169,7 +170,7 @@ def main() -> None:
             outputs = discriminator(
                 input_ids=input_ids,
                 attention_mask=attention_mask
-            )
+            )            
             loss_discriminator = loss_fn_discriminator(outputs, targets_sentiment)
 
             # TODO how to balance!? (now more training for output 0.)
