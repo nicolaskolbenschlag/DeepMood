@@ -4,6 +4,7 @@ import torch
 import numpy as np
 
 MODEL_NAME = "bert-base-uncased"
+
 MAX_LENGTH = 32#128
 
 class Dataset(torch.utils.data.Dataset):
